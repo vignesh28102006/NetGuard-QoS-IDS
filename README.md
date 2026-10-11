@@ -44,7 +44,7 @@ Modern network infrastructures require automated, machine-learning-driven monito
 | :--- | :--- | :--- |
 | **Regression** | **UNSW-NB15** | Network traffic / QoS regression |
 | **Classification** | **CIC-IDS2017** | Network attack classification |
-| **Clustering** | **CTU-13** | Unsupervised network traffic behaviour analysis |
+| **Clustering** | **NSL-KDD** | Unsupervised network traffic behaviour analysis |
 
 > [!NOTE]
 > The raw regression dataset (`UNSW_NB15_training-set.csv`) and classification dataset (`network_traffic_classification.csv`, via Git LFS) are tracked in the repository for these project milestones.
@@ -136,19 +136,22 @@ NetGuard-QoS-IDS/
 ---
 
 ### 🔍 Clustering
-* **Dataset**: CTU-13
-* **Planned Algorithms**:
-  1. K-Means Clustering
-  2. Agglomerative Hierarchical Clustering
-* **Required Metrics**:
+* **Dataset**: NSL-KDD (`nslkdd.csv`)
+* **Implemented Algorithms**:
+  1. K-Means Clustering ($K=5$)
+  2. Agglomerative Hierarchical Clustering ($K=5$, Ward Linkage)
+* **Evaluated Metrics**:
   * Silhouette Score
   * Davies-Bouldin Index
   * Calinski-Harabasz Index
-* **Required Visualizations**:
-  * K-Means Elbow Curve
-  * Hierarchical Dendrogram
-  * PCA 2D Scatter Visualization
-  * t-SNE 2D Projection (where applicable)
+  * Adjusted Rand Index (ARI vs Ground Truth)
+  * Normalized Mutual Information (NMI vs Ground Truth)
+* **Visualizations**:
+  * K-Means Elbow Curve ($K=2 \dots 10$)
+  * Hierarchical Dendrogram (Ward Linkage, $N=60$ flows)
+  * PCA 2D Subspace Projection (Colored by Cluster & Ground Truth)
+  * t-SNE 2D Manifold Embedding (Colored by Cluster & Ground Truth)
+  * Cluster Attack Composition Stacked Bar Chart
 
 ---
 
@@ -235,10 +238,20 @@ Evaluation of the 5 baseline multi-class network intrusion classifiers on held-o
 
 ---
 
-### 3. 🔍 Clustering Performance (CTU-13 — Review 2)
+### 3. 🔍 Clustering Performance (NSL-KDD — Review 2)
 
-> [!NOTE]
-> Clustering experiments (K-Means, Agglomerative Hierarchical, PCA/t-SNE visualization) are scheduled for the next review milestone.
+Evaluation of unsupervised traffic profiling across the evaluated clustering algorithms on stratified benchmark flows:
+
+| Algorithm | Sample Size ($N$) | Silhouette Score ($\uparrow$) | Davies–Bouldin Index ($\downarrow$) | Calinski–Harabasz Index ($\uparrow$) | ARI vs Ground Truth ($\uparrow$) | NMI vs Ground Truth ($\uparrow$) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **K-Means ($K=5$)** | **50,000** | **0.4600** | **0.6641** | **9,273.4** | **0.6185** | **0.5116** |
+| **K-Means ($K=3$)** | 50,000 | 0.3756 | 0.6451 | 9,027.6 | 0.4115 | 0.4133 |
+| **Agglomerative ($K=5$)** | 2,500 | **0.4759** | 1.0821 | 581.2 | 0.5918 | 0.4943 |
+
+* **Key Takeaways**:
+  * **Strong Threat Alignment**: Unsupervised K-Means ($K=5$) achieved an **Adjusted Rand Index of 0.6185** and **Normalized Mutual Information of 0.5116** against ground-truth attack classes, confirming that network packet features naturally segregate into distinct threat categories without supervision.
+  * **Traffic Separation & QoS Triage**: Cluster 1 captured **97.99% DoS attack flows** (characterized by saturated SYN error rates $\approx 0.98$), while Cluster 0 captured **86.30% clean benign traffic**, validating the ability to automate line-rate QoS traffic triage.
+  * **Dimensionality Projections**: Both linear PCA (2D explained variance $\approx 30.1\%$) and non-linear t-SNE embeddings confirmed spatial segregation between volumetric flooding attacks and normal interactive sessions.
 
 ---
 
